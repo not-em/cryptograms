@@ -192,6 +192,15 @@ class TestRoundtripTier3(unittest.TestCase):
         """Moon landing quote — includes an apostrophe contraction."""
         self._roundtrip("THAT'S ONE SMALL STEP FOR MAN ONE GIANT LEAP FOR MANKIND")
 
+    def test_ten_plus_word_sentences(self):
+        sentences = [
+            "IT'S A TRUTH UNIVERSALLY ACKNOWLEDGED THAT A MAN IN POSSESSION OF A GOOD FORTUNE MUST BE IN WANT OF A WIFE",
+            "A LOT OF THE CONCEPTS IN THE BIBLE ARE BASED ON ANCIENT MYTHOLOGY THAT DOESN'T FIT THE FINDINGS OF SCIENCE",
+            "LOVE IS LIKE AN HOURGLASS WITH THE HEART FILLING UP AS THE BRAIN EMPTIES"
+        ]
+
+        for sentence in sentences:
+            self._roundtrip(sentence)
 
 if __name__ == "__main__":
     unittest.main()
