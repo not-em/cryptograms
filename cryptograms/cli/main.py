@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
-from ..service import solve_cryptogram, solve_file
+from ..service import encrypt_cryptogram, solve_cryptogram
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -13,39 +14,47 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    inline = subparsers.add_parser("text", help="Solve a ciphertext provided via CLI")
-    inline.add_argument(
-        "ciphertext", help="Ciphertext to solve; use quotes for multi-word input"
+    decrypt_cmd = subparsers.add_parser(
+        "decrypt", help="Solve a ciphertext (string or file path)"
     )
-    inline.add_argument("--clue", help="Optional hint or author clue", default=None)
+    decrypt_cmd.add_argument(
+        "input", help="Ciphertext to solve, or path to a UTF-8 file containing it"
+    )
+    decrypt_cmd.add_argument("--clue", help="Optional hint or author clue", default=None)
 
-    file_cmd = subparsers.add_parser("file", help="Solve a ciphertext stored in a file")
-    file_cmd.add_argument(
-        "path", help="Path to a UTF-8 text file containing the ciphertext"
+    encrypt_cmd = subparsers.add_parser(
+        "encrypt", help="Encrypt plaintext with a random substitution cipher"
     )
-    file_cmd.add_argument("--clue", help="Optional hint or author clue", default=None)
+    encrypt_cmd.add_argument(
+        "plaintext", help="Plaintext to encrypt; use quotes for multi-word input"
+    )
+    encrypt_cmd.add_argument(
+        "--seed", type=int, default=None, help="Integer seed for reproducible output"
+    )
 
     return parser
 
 
-def _run_text(ciphertext: str, clue: str | None) -> None:
+def _run_decrypt(input: str, clue: str | None) -> None:
+    p = Path(input)
+    ciphertext = p.read_text(encoding="utf-8-sig") if p.is_file() else input
     solution = solve_cryptogram(ciphertext, clue=clue)
     print(solution.format_summary())
 
 
-def _run_file(path: str, clue: str | None) -> None:
-    solution = solve_file(path, clue=clue)
-    print(solution.format_summary())
+def _run_encrypt(plaintext: str, seed: int | None) -> None:
+    ciphertext = encrypt_cryptogram(plaintext, seed=seed)
+    print(ciphertext)
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = _build_parser()
     args = parser.parse_args(argv)
 
-    if args.command == "text":
-        _run_text(args.ciphertext, args.clue)
+    if args.command == "decrypt":
+        _run_decrypt(args.input, args.clue)
     else:
-        _run_file(args.path, args.clue)
+        _run_encrypt(args.plaintext, args.seed)
 
 
 if __name__ == "__main__":  # pragma: no cover
