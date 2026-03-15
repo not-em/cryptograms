@@ -37,7 +37,7 @@ def encrypt_cryptogram(
     plaintext: str,
     *,
     seed: int | None = None,
-) -> tuple[str, CipherMapping]:
+) -> str:
     """Encrypt plaintext with a random substitution cipher.
 
     Generates a random bijective letter substitution and applies it to the
@@ -48,9 +48,7 @@ def encrypt_cryptogram(
         seed: Optional integer seed for reproducible output (useful in tests).
 
     Returns:
-        A tuple of ``(ciphertext, decode_mapping)`` where ``decode_mapping``
-        is the :class:`CipherMapping` that solvers use to recover the original
-        plaintext from the ciphertext.
+        str: The encrypted text.
     """
     rng = random.Random(seed)
     plain_letters = list(string.ascii_uppercase)
@@ -62,9 +60,5 @@ def encrypt_cryptogram(
         "".join(plain_letters) + "".join(plain_letters).lower(),
         "".join(cipher_letters) + "".join(c.lower() for c in cipher_letters),
     )
-    ciphertext = plaintext.translate(encode_map)
-
-    # CipherMapping stores cipher → plain (the decoding direction)
-    decode = {c: p for p, c in zip(plain_letters, cipher_letters)}
-    return ciphertext, CipherMapping(mapping=decode)
+    return plaintext.translate(encode_map)
 
