@@ -61,4 +61,3 @@ def encrypt_cryptogram(
         "".join(cipher_letters) + "".join(c.lower() for c in cipher_letters),
     )
     return plaintext.translate(encode_map)
-

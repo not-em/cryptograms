@@ -6,7 +6,6 @@ from wordfreq import word_frequency
 
 from .words import WordBank
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -29,10 +28,14 @@ class Guesser:
         """Unified strategy: trigrams if both neighbours known, bigrams if one, frequency otherwise."""
         if preceding and following:
             logger.debug("best_guess strategy=trigram candidates=%d", len(candidates))
-            return self.make_guess_with_trigrams(candidates, preceding=preceding, following=following)
+            return self.make_guess_with_trigrams(
+                candidates, preceding=preceding, following=following
+            )
         elif preceding or following:
             logger.debug("best_guess strategy=bigram candidates=%d", len(candidates))
-            return self.make_guess_with_bigrams(candidates, preceding=preceding, following=following)
+            return self.make_guess_with_bigrams(
+                candidates, preceding=preceding, following=following
+            )
         else:
             logger.debug("best_guess strategy=frequency candidates=%d", len(candidates))
             return self.make_frequency_guess(candidates)
@@ -68,10 +71,9 @@ class Guesser:
         total_score = 0.0
 
         for word in candidates:
-            bigram_score = (
-                self._bigram_score(word, preceding, "preceding")
-                + self._bigram_score(word, following, "following")
-            )
+            bigram_score = self._bigram_score(
+                word, preceding, "preceding"
+            ) + self._bigram_score(word, following, "following")
             score = bigram_score * 0.7 + word_frequency(word.lower(), "en") * 0.3
             total_score += score
             if score > best_score:
@@ -133,7 +135,9 @@ class Guesser:
             return self.word_bank.get_bigram_frequency(word, context)
         return 0.0
 
-    def get_trigram_score(self, first: str | None, second: str, third: str | None) -> int:
+    def get_trigram_score(
+        self, first: str | None, second: str, third: str | None
+    ) -> int:
         """Return the Brown-corpus trigram count; returns 0 if any argument is absent."""
         if not first or not second or not third:
             return 0

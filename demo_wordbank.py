@@ -48,9 +48,7 @@ def main():
     print(f"   Found {len(apostrophe_words)} words with apostrophes")
     # Sort by frequency and show top 10
     sorted_apos = sorted(
-        apostrophe_words[:100],
-        key=lambda w: bank.get_frequency(w),
-        reverse=True
+        apostrophe_words[:100], key=lambda w: bank.get_frequency(w), reverse=True
     )[:10]
     print(f"   Most common: {', '.join(sorted_apos)}")
     print()

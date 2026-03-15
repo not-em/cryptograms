@@ -1,5 +1,6 @@
 """Utilities for encoding words and generating encodings for pattern matching."""
 
+
 def find_word_pattern(word: str) -> str:
     """
     Encode a word into a pattern based on letter occurrences.
@@ -22,6 +23,7 @@ def find_word_pattern(word: str) -> str:
 
     return "".join(pattern)
 
+
 def generate_patterns(words: list[str]) -> dict[str, list[str]]:
     """
     Generate a mapping from encoded patterns to words.
@@ -37,4 +39,3 @@ def generate_patterns(words: list[str]) -> dict[str, list[str]]:
         patterns[pattern].append(word)
 
     return patterns
-

@@ -4,15 +4,17 @@ import unittest
 from unittest.mock import MagicMock
 
 
-def _make_word_bank(frequencies: dict[str, float], bigrams: dict = None, trigrams: dict = None) -> MagicMock:
+def _make_word_bank(
+    frequencies: dict[str, float], bigrams: dict = None, trigrams: dict = None
+) -> MagicMock:
     """Return a WordBank mock with controllable frequency/bigram/trigram data."""
     wb = MagicMock()
     wb.get_frequency.side_effect = lambda w: frequencies.get(w.lower(), 0.0)
-    wb.get_bigram_frequency.side_effect = (
-        lambda a, b: (bigrams or {}).get((a.upper(), b.upper()), 0)
+    wb.get_bigram_frequency.side_effect = lambda a, b: (bigrams or {}).get(
+        (a.upper(), b.upper()), 0
     )
-    wb.get_trigram_frequency.side_effect = (
-        lambda a, b, c: (trigrams or {}).get((a.upper(), b.upper(), c.upper()), 0)
+    wb.get_trigram_frequency.side_effect = lambda a, b, c: (trigrams or {}).get(
+        (a.upper(), b.upper(), c.upper()), 0
     )
     return wb
 
@@ -21,6 +23,7 @@ class TestMakeFrequencyGuess(unittest.TestCase):
 
     def _make_guesser(self, frequencies):
         from cryptograms.core.guess import Guesser
+
         return Guesser(_make_word_bank(frequencies))
 
     def test_returns_highest_frequency_word(self):
@@ -44,6 +47,7 @@ class TestMakeGuessWithBigrams(unittest.TestCase):
 
     def _make_guesser(self, frequencies, bigrams=None):
         from cryptograms.core.guess import Guesser
+
         return Guesser(_make_word_bank(frequencies, bigrams=bigrams))
 
     def test_bigram_context_preferred_over_pure_frequency(self):
@@ -69,20 +73,25 @@ class TestMakeGuessWithTrigrams(unittest.TestCase):
 
     def _make_guesser(self, frequencies, bigrams=None, trigrams=None):
         from cryptograms.core.guess import Guesser
+
         return Guesser(_make_word_bank(frequencies, bigrams=bigrams, trigrams=trigrams))
 
     def test_trigram_context_influences_choice(self):
         freqs = {"the": 0.07, "and": 0.05}
         trig = {("OF", "THE", "END"): 30}
         g = self._make_guesser(freqs, trigrams=trig)
-        word, _ = g.make_guess_with_trigrams(["the", "and"], preceding="of", following="end")
+        word, _ = g.make_guess_with_trigrams(
+            ["the", "and"], preceding="of", following="end"
+        )
         self.assertEqual(word, "the")
 
     def test_frequency_floor_prevents_zero_confidence(self):
         """When trigrams and bigrams are both 0, word frequency is the only signal."""
         freqs = {"the": 0.07, "xyz": 0.0001}
         g = self._make_guesser(freqs, bigrams={}, trigrams={})
-        _, confidence = g.make_guess_with_trigrams(["the", "xyz"], preceding="of", following="end")
+        _, confidence = g.make_guess_with_trigrams(
+            ["the", "xyz"], preceding="of", following="end"
+        )
         self.assertGreater(confidence, 0.0)
 
 
@@ -91,6 +100,7 @@ class TestBestGuess(unittest.TestCase):
 
     def _make_guesser(self, frequencies, bigrams=None, trigrams=None):
         from cryptograms.core.guess import Guesser
+
         return Guesser(_make_word_bank(frequencies, bigrams=bigrams, trigrams=trigrams))
 
     def test_uses_trigrams_when_both_neighbours_known(self):
@@ -124,4 +134,3 @@ class TestBestGuess(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

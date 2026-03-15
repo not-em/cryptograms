@@ -47,6 +47,7 @@ if _STATIC.exists():
 # Request / Response schemas
 # ---------------------------------------------------------------------------
 
+
 class SolveRequest(BaseModel):
     ciphertext: str
     clue: str | None = None
@@ -71,6 +72,7 @@ class EncryptResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
+
 
 @app.get("/", include_in_schema=False)
 def index():
@@ -104,5 +106,5 @@ def encrypt(req: EncryptRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("cryptograms.api:app", host="127.0.0.1", port=8000, reload=True)
 
+    uvicorn.run("cryptograms.api:app", host="127.0.0.1", port=8000, reload=True)

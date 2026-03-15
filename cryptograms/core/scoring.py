@@ -48,7 +48,8 @@ def score_solution(plaintext: str, word_bank=None) -> float:
 
     # Tokenize: strip edge punctuation, keep apostrophes, skip non-word tokens
     words = [
-        cleaned.lower() for w in plaintext.split()
+        cleaned.lower()
+        for w in plaintext.split()
         if (cleaned := w.strip(_PUNCT_STRIP)) and cleaned.replace("'", "").isalpha()
     ]
 
@@ -65,11 +66,13 @@ def score_solution(plaintext: str, word_bank=None) -> float:
     # --- 2. Bigram hit rate -----------------------------------------------
     if word_bank is None:
         from .words import WordBank
+
         word_bank = WordBank(min_length=1)
 
     pairs = list(zip(words, words[1:]))
     n_present = sum(
-        1 for w1, w2 in pairs
+        1
+        for w1, w2 in pairs
         if word_bank.get_bigram_frequency(w1.upper(), w2.upper()) > 0
     )
     bigram_hit_rate = n_present / len(pairs)

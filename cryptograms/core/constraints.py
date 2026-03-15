@@ -6,7 +6,6 @@ import logging
 
 from .models import Puzzle
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -59,4 +58,3 @@ class LetterConstraints:
             elif len(suffix) == 2:
                 self.narrow(word[-2], {"L", "R", "V"})
                 self.narrow(word[-1], {"E", "L"})
-

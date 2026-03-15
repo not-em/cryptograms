@@ -1,4 +1,5 @@
 """Demo entry point: python -m cryptograms.core"""
+
 from cryptograms.core.exceptions import UnsolvableError
 from cryptograms.core.models import Puzzle
 from cryptograms.core.solver import Solver

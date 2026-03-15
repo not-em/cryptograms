@@ -20,7 +20,9 @@ def _build_parser() -> argparse.ArgumentParser:
     decrypt_cmd.add_argument(
         "input", help="Ciphertext to solve, or path to a UTF-8 file containing it"
     )
-    decrypt_cmd.add_argument("--clue", help="Optional hint or author clue", default=None)
+    decrypt_cmd.add_argument(
+        "--clue", help="Optional hint or author clue", default=None
+    )
 
     encrypt_cmd = subparsers.add_parser(
         "encrypt", help="Encrypt plaintext with a random substitution cipher"

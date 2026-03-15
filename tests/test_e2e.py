@@ -33,10 +33,10 @@ import unittest
 from cryptograms.core.exceptions import UnsolvableError
 from cryptograms.service import encrypt_cryptogram, solve_cryptogram
 
-
 # ---------------------------------------------------------------------------
 # Tier 0 – unit tests for encrypt_cryptogram()
 # ---------------------------------------------------------------------------
+
 
 class TestEncryptCryptogram(unittest.TestCase):
     """Verify the encryption function in isolation — no solver involved."""
@@ -81,6 +81,7 @@ class TestEncryptCryptogram(unittest.TestCase):
 # Tier 1 – single-letter words
 # ---------------------------------------------------------------------------
 
+
 class TestRoundtripTier1(unittest.TestCase):
     """Single-letter words: solver must narrow to 'A' or 'I'."""
 
@@ -90,18 +91,17 @@ class TestRoundtripTier1(unittest.TestCase):
 
     def test_single_letter_a(self):
         result = self._solve("A")
-        self.assertIn(result, {"A", "I"},
-                      "Single-letter word must solve to A or I")
+        self.assertIn(result, {"A", "I"}, "Single-letter word must solve to A or I")
 
     def test_single_letter_i(self):
         result = self._solve("I")
-        self.assertIn(result, {"A", "I"},
-                      "Single-letter word must solve to A or I")
+        self.assertIn(result, {"A", "I"}, "Single-letter word must solve to A or I")
 
 
 # ---------------------------------------------------------------------------
 # Tier 2 – six-word sentences
 # ---------------------------------------------------------------------------
+
 
 class TestRoundtripTier2(unittest.TestCase):
     """Six-word sentences: enough constraints for a unique English reading."""
@@ -126,9 +126,11 @@ class TestRoundtripTier2(unittest.TestCase):
     def test_all_that_glitters_is_not_gold(self):
         self._roundtrip("ALL THAT GLITTERS IS NOT GOLD")
 
+
 # ---------------------------------------------------------------------------
 # Tier 3 – longer well-known sentences
 # ---------------------------------------------------------------------------
+
 
 class TestRoundtripTier3(unittest.TestCase):
     """Longer sentences — exercises bigram/trigram guessing path."""
@@ -162,12 +164,12 @@ class TestRoundtripTier3(unittest.TestCase):
         sentences = [
             "IT'S A TRUTH UNIVERSALLY ACKNOWLEDGED THAT A MAN IN POSSESSION OF A GOOD FORTUNE MUST BE IN WANT OF A WIFE",
             "A LOT OF THE CONCEPTS IN THE BIBLE ARE BASED ON ANCIENT MYTHOLOGY THAT DOESN'T FIT THE FINDINGS OF SCIENCE",
-            "LOVE IS LIKE AN HOURGLASS WITH THE HEART FILLING UP AS THE BRAIN EMPTIES"
+            "LOVE IS LIKE AN HOURGLASS WITH THE HEART FILLING UP AS THE BRAIN EMPTIES",
         ]
 
         for sentence in sentences:
             self._roundtrip(sentence)
 
+
 if __name__ == "__main__":
     unittest.main()
-

@@ -25,21 +25,28 @@ class TestScoreSolutionInvariants(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from cryptograms.core.words import WordBank
+
         cls.wb = WordBank(min_length=1)
 
     def _score(self, text: str) -> float:
         from cryptograms.core.scoring import score_solution
+
         return score_solution(text, self.wb)
 
     def test_empty_string_returns_zero(self):
         self.assertEqual(self._score(""), 0.0)
 
     def test_score_in_unit_interval(self):
-        for text in ["HELLO", "HELLO WORLD", "I AM FINE TODAY",
-                     "XQZJM WVPBK", "THE QUICK BROWN FOX"]:
+        for text in [
+            "HELLO",
+            "HELLO WORLD",
+            "I AM FINE TODAY",
+            "XQZJM WVPBK",
+            "THE QUICK BROWN FOX",
+        ]:
             s = self._score(text)
             self.assertGreaterEqual(s, 0.0, f"score < 0 for {text!r}")
-            self.assertLessEqual(s, 1.0,   f"score > 1 for {text!r}")
+            self.assertLessEqual(s, 1.0, f"score > 1 for {text!r}")
 
     def test_single_word_returns_coverage_only(self):
         # Valid single word — coverage = 1.0, no bigram component
@@ -58,23 +65,25 @@ class TestScoreSolutionWordCoverage(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from cryptograms.core.words import WordBank
+
         cls.wb = WordBank(min_length=1)
 
     def _score(self, text: str) -> float:
         from cryptograms.core.scoring import score_solution
+
         return score_solution(text, self.wb)
 
     def test_all_valid_words_beats_all_nonsense(self):
-        valid   = "THE QUICK BROWN FOX"
+        valid = "THE QUICK BROWN FOX"
         nonsense = "XQZJM WVPBK FGHIJ KLM"
         self.assertGreater(self._score(valid), self._score(nonsense))
 
     def test_mixed_validity_is_between_extremes(self):
-        all_valid   = "THE CAT SAT ON THE MAT"
+        all_valid = "THE CAT SAT ON THE MAT"
         all_invalid = "XQZJM WVPBK FGHIJ KLM NOPQ RSTU"
-        mixed       = "THE XQZJM SAT ON THE WVPBK"
-        self.assertGreater(self._score(all_valid),   self._score(mixed))
-        self.assertGreater(self._score(mixed),        self._score(all_invalid))
+        mixed = "THE XQZJM SAT ON THE WVPBK"
+        self.assertGreater(self._score(all_valid), self._score(mixed))
+        self.assertGreater(self._score(mixed), self._score(all_invalid))
 
 
 class TestScoreSolutionBigramCoherence(unittest.TestCase):
@@ -89,18 +98,23 @@ class TestScoreSolutionBigramCoherence(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from cryptograms.core.words import WordBank
+
         cls.wb = WordBank(min_length=1)
 
     def _score(self, text: str) -> float:
         from cryptograms.core.scoring import score_solution
+
         return score_solution(text, self.wb)
 
     def test_i_think_therefore_i_am_beats_wrong_answer(self):
         """The solver's known wrong answer has absent bigrams; correct one does not."""
         correct = "I THINK THEREFORE I AM"
-        wrong   = "A THANK THEREFORE A IS"  # solver's actual wrong output
-        self.assertGreater(self._score(correct), self._score(wrong),
-                           "correct solution should score higher than 'A THANK THEREFORE A IS'")
+        wrong = "A THANK THEREFORE A IS"  # solver's actual wrong output
+        self.assertGreater(
+            self._score(correct),
+            self._score(wrong),
+            "correct solution should score higher than 'A THANK THEREFORE A IS'",
+        )
 
     def test_fdr_quote_scores_above_half(self):
         """A well-known coherent sentence should score comfortably above 0.5."""
@@ -111,17 +125,17 @@ class TestScoreSolutionBigramCoherence(unittest.TestCase):
         """Replacing a known good bigram with a nonsense pair should drop the score."""
         good = "I THINK THEREFORE I AM"
         # Replace THINK with XQZJM — (I, XQZJM) will be absent from Brown
-        bad  = "I XQZJM THEREFORE I AM"
+        bad = "I XQZJM THEREFORE I AM"
         self.assertGreater(self._score(good), self._score(bad))
 
     def test_score_without_word_bank_still_works(self):
         """score_solution() must be callable with no word_bank (standalone use)."""
         from cryptograms.core.scoring import score_solution
+
         result = score_solution("I THINK THEREFORE I AM")
         self.assertGreaterEqual(result, 0.0)
-        self.assertLessEqual(result,    1.0)
+        self.assertLessEqual(result, 1.0)
 
 
 if __name__ == "__main__":
     unittest.main()
-

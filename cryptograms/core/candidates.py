@@ -10,7 +10,6 @@ from .models import Puzzle
 from .patterns import generate_patterns
 from .words import WordBank
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -82,7 +81,8 @@ class WordCandidates:
 
     def check_solved(self) -> bool:
         """Return True when every cipher word has exactly one remaining candidate."""
-        solved = all(len(candidates) == 1 for candidates in self.possible_words.values())
+        solved = all(
+            len(candidates) == 1 for candidates in self.possible_words.values()
+        )
         logger.debug("Check solved: %s", solved)
         return solved
-

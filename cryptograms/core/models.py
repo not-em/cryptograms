@@ -61,7 +61,8 @@ class Puzzle:
         self.original_ciphertext = ciphertext
         self.ciphertext = ciphertext.upper()
         self.words = [
-            cleaned for raw in self.ciphertext.split()
+            cleaned
+            for raw in self.ciphertext.split()
             if (cleaned := raw.strip(_PUNCT_STRIP))
         ]
 

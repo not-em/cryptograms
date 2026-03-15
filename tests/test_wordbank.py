@@ -32,32 +32,32 @@ class TestWordBank(unittest.TestCase):
         """Test getting words by specific length."""
         # Single letter words
         one_letter = self.bank.get_words_by_length(1)
-        self.assertIn('a', one_letter)
-        self.assertIn('i', one_letter)
+        self.assertIn("a", one_letter)
+        self.assertIn("i", one_letter)
 
         # Two letter words
         two_letter = self.bank.get_words_by_length(2)
         self.assertGreater(len(two_letter), 10)
-        self.assertIn('is', two_letter)
-        self.assertIn('it', two_letter)
+        self.assertIn("is", two_letter)
+        self.assertIn("it", two_letter)
 
     def test_get_frequency(self):
         """Test word frequency lookup."""
         # Common words should have higher frequency
-        freq_the = self.bank.get_frequency('the')
-        freq_hello = self.bank.get_frequency('hello')
-        freq_rare = self.bank.get_frequency('zymurgy')
+        freq_the = self.bank.get_frequency("the")
+        freq_hello = self.bank.get_frequency("hello")
+        freq_rare = self.bank.get_frequency("zymurgy")
 
         self.assertGreater(freq_the, freq_hello)
         self.assertGreater(freq_hello, freq_rare)
 
     def test_is_valid_word(self):
         """Test word validation."""
-        self.assertTrue(self.bank.is_valid_word('hello'))
-        self.assertTrue(self.bank.is_valid_word('HELLO'))  # Case insensitive
-        self.assertTrue(self.bank.is_valid_word('world'))
-        self.assertFalse(self.bank.is_valid_word('xyz123'))
-        self.assertFalse(self.bank.is_valid_word('asdfgh'))
+        self.assertTrue(self.bank.is_valid_word("hello"))
+        self.assertTrue(self.bank.is_valid_word("HELLO"))  # Case insensitive
+        self.assertTrue(self.bank.is_valid_word("world"))
+        self.assertFalse(self.bank.is_valid_word("xyz123"))
+        self.assertFalse(self.bank.is_valid_word("asdfgh"))
 
     def test_get_words_by_length_sorted(self):
         """Test getting sorted words by length."""
@@ -75,8 +75,8 @@ class TestWordBank(unittest.TestCase):
         simple = self.bank.get_simple_words()
 
         # Should include single letter words
-        self.assertIn('a', simple)
-        self.assertIn('i', simple)
+        self.assertIn("a", simple)
+        self.assertIn("i", simple)
 
         # Should have some two-letter words
         self.assertGreater(len(simple), 5)
@@ -115,5 +115,5 @@ class TestWordBank(unittest.TestCase):
         self.assertIsNone(self.bank._frequencies)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

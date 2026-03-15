@@ -9,7 +9,6 @@ from .guess import Guesser
 from .models import CipherMapping, Puzzle, Solution
 from .words import WordBank
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -69,6 +68,7 @@ class Solver:
         # mapping, mirrors the original's case, and passes non-alpha chars through.
         plaintext = mapping.decrypt(puzzle.original_ciphertext)
         from .scoring import score_solution
+
         confidence = score_solution(plaintext, self.word_bank)
         return Solution(
             puzzle=puzzle,
@@ -93,10 +93,16 @@ class Solver:
             if len(candidates) < 2:
                 continue
 
-            preceding_word = self.candidates.get_solved_word(puzzle.get_preceding_word(cipher_word))
-            following_word = self.candidates.get_solved_word(puzzle.get_following_word(cipher_word))
+            preceding_word = self.candidates.get_solved_word(
+                puzzle.get_preceding_word(cipher_word)
+            )
+            following_word = self.candidates.get_solved_word(
+                puzzle.get_following_word(cipher_word)
+            )
 
-            best_word, confidence = self.guesser.best_guess(candidates, preceding_word, following_word)
+            best_word, confidence = self.guesser.best_guess(
+                candidates, preceding_word, following_word
+            )
             if confidence > max_confidence:
                 max_confidence = confidence
                 best_guess = (cipher_word, best_word)
@@ -106,6 +112,7 @@ class Solver:
 
     def show_solution(self, puzzle: Puzzle) -> None:
         """Emit the final solution to debug logs."""
-        solution = "".join([self.constraints.locked.get(c, c) for c in puzzle.ciphertext])
+        solution = "".join(
+            [self.constraints.locked.get(c, c) for c in puzzle.ciphertext]
+        )
         logger.debug("Final solution: %s", solution)
-

@@ -6,9 +6,9 @@ import nltk
 from nltk import bigrams, trigrams
 
 try:
-    nltk.data.find('corpora/brown')
+    nltk.data.find("corpora/brown")
 except LookupError:
-    nltk.download('brown')
+    nltk.download("brown")
 from nltk.corpus import brown
 from wordfreq import get_frequency_dict, word_frequency
 from collections import Counter
@@ -100,33 +100,35 @@ class WordBank:
     @staticmethod
     def get_word_frequency(word: str) -> float:
         """Direct wordfreq lookup (bypasses the cached frequency dict)."""
-        return word_frequency(word.lower(), 'en')
+        return word_frequency(word.lower(), "en")
 
     def get_bigram_frequency(self, first: str, second: str) -> int:
         return self.bigram_frequencies.get((first.upper(), second.upper()), 0)
 
     def get_trigram_frequency(self, first: str, second: str, third: str) -> int:
-        return self.trigram_frequencies.get((first.upper(), second.upper(), third.upper()), 0)
+        return self.trigram_frequencies.get(
+            (first.upper(), second.upper(), third.upper()), 0
+        )
 
     # ------------------------------------------------------------------
     # Private loaders
     # ------------------------------------------------------------------
 
     def _load_english_words(self) -> set[str]:
-        freq_dict = get_frequency_dict('en', wordlist='best')
+        freq_dict = get_frequency_dict("en", wordlist="best")
         words = {
             word.lower()
             for word, freq in freq_dict.items()
             if len(word) >= self.min_length and freq > 1e-7
         }
-        words.add('a')
-        words.add('i')
+        words.add("a")
+        words.add("i")
         return words
 
     def _load_word_frequencies(self) -> dict[str, float]:
         frequencies = {}
         for word in self.words:  # reuses the cached word set
-            freq = word_frequency(word, 'en')
+            freq = word_frequency(word, "en")
             if freq > 0:
                 frequencies[word] = freq
         return frequencies
