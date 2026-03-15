@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from patterns import find_word_pattern
+from .patterns import find_word_pattern
 
 
 @dataclass
@@ -37,7 +37,16 @@ class Puzzle:
     single_letter_words: list[str] = field(default_factory=list)
     apostrophe_words: list[str] = field(default_factory=list)
 
-    def __init__(self, ciphertext: str):
+    def __init__(
+        self,
+        ciphertext: str,
+        clue: str | None = None,
+        locked_pairs: dict[str, str] | None = None,
+    ):
+        self.clue = clue
+        self.locked_pairs: dict[str, str] = {
+            k.upper(): v.upper() for k, v in (locked_pairs or {}).items()
+        }
 
         self.original_ciphertext = ciphertext
         self.ciphertext = ciphertext.upper()
