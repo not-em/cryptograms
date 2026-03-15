@@ -14,7 +14,7 @@ pip install cryptograms
 
 ## Usage
 
-### Python API
+### Python
 
 ```python
 from cryptograms import solve_cryptogram, encrypt_cryptogram
@@ -29,7 +29,7 @@ ciphertext = encrypt_cryptogram("Hello world")
 print(ciphertext)            # e.g. Ebiil tloia
 ```
 
-### Command line
+### CLI
 
 ```bash
 # Decrypt — accepts a string or a file path
