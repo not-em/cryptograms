@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import logging
+import string
 
 from dataclasses import dataclass, field
 
 from .patterns import find_word_pattern
+
+# Characters stripped from word edges before pattern matching.
+# Apostrophe is excluded so contractions like "IT'S" are kept intact.
+_PUNCT_STRIP = string.punctuation.replace("'", "")
 
 
 logger = logging.getLogger(__name__)
@@ -55,7 +60,10 @@ class Puzzle:
 
         self.original_ciphertext = ciphertext
         self.ciphertext = ciphertext.upper()
-        self.words = self.ciphertext.upper().split()
+        self.words = [
+            cleaned for raw in self.ciphertext.split()
+            if (cleaned := raw.strip(_PUNCT_STRIP))
+        ]
 
         self.patterns = {w: find_word_pattern(w) for w in self.words}
 
