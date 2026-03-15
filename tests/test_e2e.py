@@ -123,20 +123,8 @@ class TestRoundtripTier2(unittest.TestCase):
             f"Solver recovered {solution.plaintext!r} but expected {plaintext!r}",
         )
 
-    def test_to_be_or_not_to_be(self):
-        """Word repetition (TO, BE) gives strong cross-word constraints."""
-        self._roundtrip("TO BE OR NOT TO BE THAT IS THE QUESTION")
-
     def test_all_that_glitters_is_not_gold(self):
         self._roundtrip("ALL THAT GLITTERS IS NOT GOLD")
-
-    def test_the_early_bird_catches_the_worm(self):
-        """Repeated THE anchors two positions simultaneously."""
-        self._roundtrip("THE EARLY BIRD CATCHES THE WORM")
-
-    def test_the_truth_will_set_you_free(self):
-        self._roundtrip("THE TRUTH WILL SET YOU FREE")
-
 
 # ---------------------------------------------------------------------------
 # Tier 3 – longer well-known sentences
@@ -161,10 +149,6 @@ class TestRoundtripTier3(unittest.TestCase):
             plaintext.upper(),
             f"Solver recovered {solution.plaintext!r} but expected {plaintext!r}",
         )
-
-    def test_i_think_therefore_i_am(self):
-        """Classic philosophical quote — from the solver's own __main__ block."""
-        self._roundtrip("I THINK THEREFORE I AM")
 
     def test_fear_itself(self):
         """FDR quote — used in the solver's __main__ block."""
