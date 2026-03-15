@@ -1,5 +1,9 @@
 # Core dependencies (none required for basic functionality)
 
+# Web API
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+
 # Development dependencies
 pytest>=7.0.0
 pytest-cov>=4.0.0
