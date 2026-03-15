@@ -87,11 +87,15 @@ class Guesser:
         preceding: str | None = None,
         following: str | None = None,
     ) -> tuple[str, float]:
-        """Rank candidates by trigram context + bigram average + word-frequency floor.
+        """Rank candidates by trigram context + bigram bottleneck + word-frequency floor.
 
-        score = trigram * 0.6 + bigram_avg * 0.25 + word_frequency * 0.15
-        Degrades gracefully: when trigrams are 0 bigrams provide signal; when both are 0
-        word frequency still distinguishes candidates.
+        score = trigram * 0.6 + min(bi_preceding, bi_following) * 0.25 + word_frequency * 0.15
+
+        The bigram component uses the *minimum* of the two directional bigram scores rather
+        than their average.  A word must fit into BOTH its neighbouring contexts; using the
+        minimum prevents a high following-bigram from compensating for a weak preceding one
+        (e.g. "ONLY THINK WE" would otherwise beat "ONLY THING WE" because (THINK,WE)=15
+        outweighs the far stronger (ONLY,THING)=13 signal when averaged).
         """
         best_word = ""
         best_score = 0.0
@@ -99,13 +103,12 @@ class Guesser:
 
         for word in candidates:
             trigram_score = self.get_trigram_score(preceding, word, following)
-            bigram_score_avg = (
-                self._bigram_score(word, preceding, "preceding")
-                + self._bigram_score(word, following, "following")
-            ) / 2
+            bi_pre = self._bigram_score(word, preceding, "preceding")
+            bi_post = self._bigram_score(word, following, "following")
+            bigram_bottleneck = min(bi_pre, bi_post)
             score = (
                 trigram_score * 0.6
-                + bigram_score_avg * 0.25
+                + bigram_bottleneck * 0.25
                 + word_frequency(word.lower(), "en") * 0.15
             )
             total_score += score
