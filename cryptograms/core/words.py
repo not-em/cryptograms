@@ -1,11 +1,7 @@
-"""Utilities for handling English words and dictionary lookups.
+"""Utilities for handling English words and dictionary lookups."""
 
-Recommended libraries:
-1. NLTK (Natural Language Toolkit) - Comprehensive word lists and corpora
-2. wordfreq - Simple word frequency lookups from multiple sources
+from __future__ import annotations
 
-Install with: pip install nltk wordfreq
-"""
 import nltk
 from nltk import bigrams, trigrams
 
@@ -17,91 +13,130 @@ from nltk.corpus import brown
 from wordfreq import get_frequency_dict, word_frequency
 from collections import Counter
 
+
 class WordBank:
     """Manages a collection of English words and their frequencies."""
 
     def __init__(self, min_length: int = 1):
-        self.words = self.load_english_words(min_length)
-        self.frequencies = self.load_word_frequencies()
-        self.bigram_frequencies = self.load_bigram_frequencies()
-        self.trigram_frequencies = self.load_trigram_frequencies()
+        self.min_length = min_length
+        self._words: set[str] | None = None
+        self._frequencies: dict[str, float] | None = None
+        self._bigram_frequencies: dict[tuple[str, str], int] | None = None
+        self._trigram_frequencies: dict[tuple[str, str, str], int] | None = None
+
+    # ------------------------------------------------------------------
+    # Lazy-loaded properties
+    # ------------------------------------------------------------------
+
+    @property
+    def words(self) -> set[str]:
+        if self._words is None:
+            self._words = self._load_english_words()
+        return self._words
+
+    @property
+    def frequencies(self) -> dict[str, float]:
+        if self._frequencies is None:
+            self._frequencies = self._load_word_frequencies()
+        return self._frequencies
+
+    @property
+    def bigram_frequencies(self) -> dict[tuple[str, str], int]:
+        if self._bigram_frequencies is None:
+            self._bigram_frequencies = self._load_bigram_frequencies()
+        return self._bigram_frequencies
+
+    @property
+    def trigram_frequencies(self) -> dict[tuple[str, str, str], int]:
+        if self._trigram_frequencies is None:
+            self._trigram_frequencies = self._load_trigram_frequencies()
+        return self._trigram_frequencies
+
+    def clear_cache(self) -> None:
+        """Reset all cached data; next access will reload from source."""
+        self._words = None
+        self._frequencies = None
+        self._bigram_frequencies = None
+        self._trigram_frequencies = None
+
+    # ------------------------------------------------------------------
+    # Word queries
+    # ------------------------------------------------------------------
 
     def is_valid_word(self, word: str) -> bool:
-        """Check if a word is valid English."""
+        """Check if a word is valid English (case-insensitive)."""
         return word.lower() in self.words
 
     def get_frequency(self, word: str) -> float:
         """Get the frequency of a word, or 0.0 if unknown."""
-        return self.frequencies.get(word.upper(), 0.0)
+        return self.frequencies.get(word.lower(), 0.0)
 
-    # Install: pip install wordfreq
+    def get_words_by_length(self, n: int) -> set[str]:
+        """Return all words of exactly length n (lowercase)."""
+        return {w for w in self.words if len(w) == n}
 
-    @staticmethod
-    def load_english_words(min_length: int = 1) -> set[str]:
+    def get_words_by_length_sorted(self, n: int, limit: int | None = None) -> list[str]:
+        """Return words of length n sorted by frequency descending."""
+        words = sorted(
+            self.get_words_by_length(n),
+            key=lambda w: self.get_frequency(w),
+            reverse=True,
+        )
+        return words[:limit] if limit is not None else words
 
-        # 'en' includes contractions and is based on web text
-        freq_dict = get_frequency_dict('en', wordlist='best')
+    def get_simple_words(self) -> list[str]:
+        """Return 1- and 2-letter words sorted by frequency descending."""
+        simple = {w for w in self.words if len(w) <= 2}
+        return sorted(simple, key=lambda w: self.get_frequency(w), reverse=True)
 
-        words = {word.upper() for word, freq in freq_dict.items() if len(word) >= min_length and freq > 1e-7}
+    def get_words_with_apostrophes(self) -> list[str]:
+        """Return all words that contain an apostrophe."""
+        return [w for w in self.words if "'" in w]
 
-        if 'A' not in words:
-            words.add('A')
-        if 'I' not in words:
-            words.add('I')
-
-        return words
-
-    def load_word_frequencies(self) -> dict[str, float]:
-        """
-        Load English word frequencies.
-
-        Uses the 'wordfreq' library which provides word frequencies from various sources.
-        Returns frequencies as probabilities (sum to ~1.0).
-
-        Returns:
-            Dictionary mapping words to their frequency scores
-        """
-
-        # Load common words with their frequencies
-        common_words = self.load_english_words()
-        frequencies = {}
-
-        for word in common_words:
-            freq = word_frequency(word, 'en')
-            if freq > 0:
-                frequencies[word] = freq
-
-        return frequencies
+    # ------------------------------------------------------------------
+    # Corpus frequency queries
+    # ------------------------------------------------------------------
 
     @staticmethod
     def get_word_frequency(word: str) -> float:
-        """
-        Get the frequency of a specific word.
-
-        Args:
-            word: The word to look up
-
-        Returns:
-            Frequency score (0.0 to 1.0), or 0.0 if word is unknown
-        """
+        """Direct wordfreq lookup (bypasses the cached frequency dict)."""
         return word_frequency(word.lower(), 'en')
-
-    @staticmethod
-    def load_bigram_frequencies() -> dict[tuple[str, str], int]:
-        # Get bigrams from Brown corpus
-        all_bigrams = list(bigrams([w.upper() for w in brown.words()]))
-        bigram_freq = Counter(all_bigrams)
-        return bigram_freq
 
     def get_bigram_frequency(self, first: str, second: str) -> int:
         return self.bigram_frequencies.get((first.upper(), second.upper()), 0)
 
-    def load_trigram_frequencies(self) -> dict[tuple[str, str, str], int]:
-        # Get trigrams from Brown corpus
-        all_trigrams = list(trigrams([w.upper() for w in brown.words()]))
-        trigram_freq = Counter(all_trigrams)
-        return trigram_freq
-
     def get_trigram_frequency(self, first: str, second: str, third: str) -> int:
         return self.trigram_frequencies.get((first.upper(), second.upper(), third.upper()), 0)
 
+    # ------------------------------------------------------------------
+    # Private loaders
+    # ------------------------------------------------------------------
+
+    def _load_english_words(self) -> set[str]:
+        freq_dict = get_frequency_dict('en', wordlist='best')
+        words = {
+            word.lower()
+            for word, freq in freq_dict.items()
+            if len(word) >= self.min_length and freq > 1e-7
+        }
+        words.add('a')
+        words.add('i')
+        return words
+
+    def _load_word_frequencies(self) -> dict[str, float]:
+        frequencies = {}
+        for word in self.words:  # reuses the cached word set
+            freq = word_frequency(word, 'en')
+            if freq > 0:
+                frequencies[word] = freq
+        return frequencies
+
+    @staticmethod
+    def _load_bigram_frequencies() -> dict[tuple[str, str], int]:
+        all_bigrams = list(bigrams([w.upper() for w in brown.words()]))
+        return Counter(all_bigrams)
+
+    @staticmethod
+    def _load_trigram_frequencies() -> dict[tuple[str, str, str], int]:
+        all_trigrams = list(trigrams([w.upper() for w in brown.words()]))
+        return Counter(all_trigrams)
