@@ -42,55 +42,37 @@ class TestEncryptCryptogram(unittest.TestCase):
     """Verify the encryption function in isolation — no solver involved."""
 
     def test_output_same_length_as_input(self):
-        ciphertext, _ = encrypt_cryptogram("HELLO WORLD", seed=0)
+        ciphertext = encrypt_cryptogram("HELLO WORLD", seed=0)
         self.assertEqual(len(ciphertext), len("HELLO WORLD"))
 
     def test_non_alpha_characters_pass_through_unchanged(self):
         plaintext = "IT'S A TEST, OK?"
-        ciphertext, _ = encrypt_cryptogram(plaintext, seed=0)
+        ciphertext = encrypt_cryptogram(plaintext, seed=0)
         for plain_char, cipher_char in zip(plaintext, ciphertext):
             if not plain_char.isalpha():
                 self.assertEqual(plain_char, cipher_char)
 
     def test_case_is_preserved(self):
         plaintext = "Hello World"
-        ciphertext, _ = encrypt_cryptogram(plaintext, seed=0)
+        ciphertext = encrypt_cryptogram(plaintext, seed=0)
         for plain_char, cipher_char in zip(plaintext, ciphertext):
             if plain_char.isalpha():
                 self.assertEqual(plain_char.isupper(), cipher_char.isupper())
 
     def test_deterministic_with_same_seed(self):
-        ct1, _ = encrypt_cryptogram("HELLO", seed=42)
-        ct2, _ = encrypt_cryptogram("HELLO", seed=42)
+        ct1 = encrypt_cryptogram("HELLO", seed=42)
+        ct2 = encrypt_cryptogram("HELLO", seed=42)
         self.assertEqual(ct1, ct2)
 
     def test_different_seeds_produce_different_ciphertexts(self):
-        ct1, _ = encrypt_cryptogram("HELLO WORLD", seed=0)
-        ct2, _ = encrypt_cryptogram("HELLO WORLD", seed=1)
+        ct1 = encrypt_cryptogram("HELLO WORLD", seed=0)
+        ct2 = encrypt_cryptogram("HELLO WORLD", seed=1)
         self.assertNotEqual(ct1, ct2)
-
-    def test_decode_mapping_recovers_plaintext(self):
-        """The returned CipherMapping should invert the encryption exactly."""
-        plaintext = "HELLO WORLD"
-        ciphertext, decode_map = encrypt_cryptogram(plaintext, seed=42)
-        self.assertNotEqual(ciphertext.upper(), plaintext.upper())
-        self.assertEqual(decode_map.decrypt(ciphertext), plaintext)
-
-    def test_decode_mapping_preserves_non_alpha(self):
-        plaintext = "IT'S FINE"
-        ciphertext, decode_map = encrypt_cryptogram(plaintext, seed=42)
-        self.assertEqual(decode_map.decrypt(ciphertext), plaintext)
-
-    def test_decode_mapping_is_bijective(self):
-        """Every cipher letter should map to a distinct plain letter."""
-        _, decode_map = encrypt_cryptogram("ANYTHING", seed=7)
-        plain_letters = list(decode_map.mapping.values())
-        self.assertEqual(len(plain_letters), len(set(plain_letters)))
 
     def test_no_seed_produces_different_results(self):
         """Without a seed, two calls should (almost certainly) differ."""
-        ct1, _ = encrypt_cryptogram("HELLO WORLD")
-        ct2, _ = encrypt_cryptogram("HELLO WORLD")
+        ct1 = encrypt_cryptogram("HELLO WORLD")
+        ct2 = encrypt_cryptogram("HELLO WORLD")
         # Probability of collision is 1/26! — negligible
         self.assertNotEqual(ct1, ct2)
 
@@ -103,7 +85,7 @@ class TestRoundtripTier1(unittest.TestCase):
     """Single-letter words: solver must narrow to 'A' or 'I'."""
 
     def _solve(self, plaintext: str, seed: int = 42) -> str:
-        ciphertext, _ = encrypt_cryptogram(plaintext, seed=seed)
+        ciphertext = encrypt_cryptogram(plaintext, seed=seed)
         return solve_cryptogram(ciphertext).plaintext.upper().strip()
 
     def test_single_letter_a(self):
@@ -127,7 +109,7 @@ class TestRoundtripTier2(unittest.TestCase):
     SEED = 42
 
     def _roundtrip(self, plaintext: str) -> None:
-        ciphertext, _ = encrypt_cryptogram(plaintext, seed=self.SEED)
+        ciphertext = encrypt_cryptogram(plaintext, seed=self.SEED)
         try:
             solution = solve_cryptogram(ciphertext)
         except UnsolvableError:
@@ -166,7 +148,7 @@ class TestRoundtripTier3(unittest.TestCase):
     SEED = 42
 
     def _roundtrip(self, plaintext: str) -> None:
-        ciphertext, _ = encrypt_cryptogram(plaintext, seed=self.SEED)
+        ciphertext = encrypt_cryptogram(plaintext, seed=self.SEED)
         try:
             solution = solve_cryptogram(ciphertext)
         except UnsolvableError:
