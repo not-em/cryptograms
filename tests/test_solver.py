@@ -3,7 +3,7 @@
 import unittest
 
 from cryptograms.core.models import CipherMapping, Puzzle
-from cryptograms.core.solver import FrequencySubstitutionSolver
+from cryptograms.core.solver import Solver
 from cryptograms.service import solve_cryptogram
 
 
@@ -29,7 +29,7 @@ class TestSolver(unittest.TestCase):
     def test_solve_creates_solution(self):
         """Test that solver produces a solution."""
         puzzle = Puzzle(ciphertext="ABC DEF")
-        solver = FrequencySubstitutionSolver()
+        solver = Solver()
         solution = solver.solve(puzzle)
 
         self.assertIsNotNone(solution)
@@ -38,12 +38,11 @@ class TestSolver(unittest.TestCase):
 
     def test_locked_pairs_respected(self):
         """Test that locked pairs are used in solution."""
-        # TODO: Add more comprehensive test
         puzzle = Puzzle(ciphertext="ABCD", locked_pairs={"A": "T"})
-        solver = FrequencySubstitutionSolver()
+        solver = Solver()
         solution = solver.solve(puzzle)
 
-        self.assertEqual(solution.mapping.mapping["A"], "T")
+        self.assertEqual(solution.mapping.mapping.get("A"), "T")
 
 
 class TestService(unittest.TestCase):
