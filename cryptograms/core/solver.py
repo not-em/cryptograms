@@ -67,7 +67,7 @@ class Solver:
             [self.constraints.locked.get(c, c) for c in puzzle.ciphertext]
         )
         from .scoring import score_solution
-        confidence = score_solution(solved_string)
+        confidence = score_solution(solved_string, self.word_bank)
         return Solution(
             puzzle=puzzle,
             mapping=CipherMapping(mapping=dict(self.constraints.locked)),
