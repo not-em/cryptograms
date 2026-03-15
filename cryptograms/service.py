@@ -5,9 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .core.models import Puzzle, Solution
-from .core.solver import FrequencySubstitutionSolver
-
-_solver = FrequencySubstitutionSolver()
+from .core.solver import Solver
 
 
 def solve_cryptogram(
@@ -17,8 +15,10 @@ def solve_cryptogram(
     locked_pairs: dict[str, str] | None = None,
 ) -> Solution:
     """Solve a cryptogram string using the default solver."""
-    puzzle = Puzzle(ciphertext=ciphertext, clue=clue, locked_pairs=locked_pairs or {})
-    return _solver.solve(puzzle)
+    # NOTE: clue and locked_pairs will be wired into Puzzle in Tier 2.
+    puzzle = Puzzle(ciphertext=ciphertext)
+    solver = Solver()
+    return solver.solve(puzzle)
 
 
 def solve_file(path: str | Path, *, clue: str | None = None) -> Solution:
