@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+import string
+
+# Strip these from word edges before frequency/bigram lookup.
+# Apostrophe is excluded so contractions like "it's" are kept intact.
+_PUNCT_STRIP = string.punctuation.replace("'", "")
+
 
 def score_solution(plaintext: str, word_bank=None) -> float:
     """Score a candidate plaintext on word validity and bigram coherence.
@@ -40,8 +46,11 @@ def score_solution(plaintext: str, word_bank=None) -> float:
     """
     from wordfreq import word_frequency
 
-    # Tokenize: alpha-only tokens, strip apostrophes for word lookup
-    words = [w.lower() for w in plaintext.split() if w.replace("'", "").isalpha()]
+    # Tokenize: strip edge punctuation, keep apostrophes, skip non-word tokens
+    words = [
+        cleaned.lower() for w in plaintext.split()
+        if (cleaned := w.strip(_PUNCT_STRIP)) and cleaned.replace("'", "").isalpha()
+    ]
 
     if not words:
         return 0.0
