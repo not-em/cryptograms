@@ -63,15 +63,17 @@ class Solver:
 
     def _build_solution(self, puzzle: Puzzle) -> Solution:
         """Construct and return a Solution dataclass from current solver state."""
-        solved_string = "".join(
-            [self.constraints.locked.get(c, c) for c in puzzle.ciphertext]
-        )
+        mapping = CipherMapping(mapping=dict(self.constraints.locked))
+        # Decrypt the *original* ciphertext so case and punctuation are preserved.
+        # CipherMapping.decrypt() looks up each letter's uppercase form in the
+        # mapping, mirrors the original's case, and passes non-alpha chars through.
+        plaintext = mapping.decrypt(puzzle.original_ciphertext)
         from .scoring import score_solution
-        confidence = score_solution(solved_string, self.word_bank)
+        confidence = score_solution(plaintext, self.word_bank)
         return Solution(
             puzzle=puzzle,
-            mapping=CipherMapping(mapping=dict(self.constraints.locked)),
-            plaintext=solved_string,
+            mapping=mapping,
+            plaintext=plaintext,
             confidence=confidence,
         )
 
@@ -107,26 +109,3 @@ class Solver:
         solution = "".join([self.constraints.locked.get(c, c) for c in puzzle.ciphertext])
         logger.debug("Final solution: %s", solution)
 
-
-if __name__ == "__main__":
-    # Run via: python -m cryptograms.core.solver
-    wb = WordBank(min_length=2)
-    crypogram = str.maketrans(
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-        "ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcba",
-    )
-
-    sentences = [
-        "I think therefore I am",
-        "The only thing we have to fear is fear itself",
-        "That's one small step for man one giant leap for mankind",
-    ]
-
-    for s in sentences:
-        solver = Solver()
-        print("\n--- New Sentence ---")
-        print(s)
-        encrypted = s.translate(crypogram)
-        print("Encrypted:", encrypted)
-        puzz = Puzzle(ciphertext=encrypted)
-        solver.solve(puzz)
