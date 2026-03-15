@@ -1,84 +1,61 @@
-# Cryptogram Solver
+# cryptograms
 
-A Python package for solving simple substitution cryptograms using frequency analysis and pattern matching.
-
-## Structure
-
-```
-cryptograms/
-├── cryptograms/              # Main package
-│   ├── core/                 # Core solving logic
-│   │   ├── models.py         # Data structures (Puzzle, Solution, CipherMapping)
-│   │   ├── solver.py         # Main solver implementation
-│   │   ├── parser.py         # Text parsing and preprocessing
-│   │   ├── frequency.py      # Letter frequency analysis
-│   │   ├── scoring.py        # Solution quality scoring
-│   │   ├── constraints.py    # Constraint checking and propagation
-│   │   └── exceptions.py     # Custom exceptions
-│   ├── cli/                  # Command-line interface
-│   │   └── main.py          # CLI entry point
-│   ├── resources/            # Data files
-│   │   └── english_freq.json # English language statistics
-│   └── service.py            # High-level API
-├── tests/                    # Unit tests
-│   └── test_solver.py
-├── main.py                   # Application entry point
-└── requirements.txt          # Dependencies
-```
+A Python package for solving simple substitution ciphers using pattern matching and constraint propagation.
 
 ## Installation
 
 ```bash
-pip install -r requirements.txt
+pip install cryptograms
 ```
 
 ## Usage
 
-### As a Python package
+### Python API
 
 ```python
-from cryptograms import solve_cryptogram
+from cryptograms import solve_cryptogram, encrypt_cryptogram
 
-solution = solve_cryptogram("KHOOR ZRUOG")
-print(solution.plaintext)
-print(solution.format_summary())
+# Solve a cipher
+solution = solve_cryptogram("Ebiil tloia")
+print(solution.plaintext)    # Hello world
+print(solution.confidence)   # 0.95
+
+# Encrypt plaintext (useful for generating puzzles)
+ciphertext = encrypt_cryptogram("Hello world")
+print(ciphertext)            # e.g. Ebiil tloia
 ```
 
-### Command-line interface
+### Command line
 
 ```bash
-# Solve text directly
-python -m cryptograms.cli.main text "KHOOR ZRUOG"
+# Decrypt — accepts a string or a file path
+cryptograms decrypt "Ebiil tloia"
+cryptograms decrypt puzzle.txt
 
-# Solve from a file
-python -m cryptograms.cli.main file puzzle.txt
-
-# With a clue
-python -m cryptograms.cli.main text "KHOOR ZRUOG" --clue "Caesar cipher"
+# Encrypt
+cryptograms encrypt "Hello world"
+cryptograms encrypt "Hello world" --seed 42   # reproducible output
 ```
 
-## Algorithm
+## How it works
 
-The solver uses a multi-step approach:
+The solver uses word-pattern matching and constraint propagation rather than frequency analysis:
 
-1. **Frequency Analysis**: Compute letter frequencies in the ciphertext
-2. **Initial Mapping**: Match cipher frequencies to known English frequencies
-3. **Constraint Application**: Apply any user-provided letter mappings
-4. **Scoring**: Evaluate solution quality using dictionary matching and language patterns
-5. **Refinement**: (TODO) Iteratively improve using hill-climbing or simulated annealing
+1. Each cipher word is encoded as a numeric pattern — `"KHOOR"` → `"12334"`
+2. Candidate plaintext words are looked up by pattern from a ~200k-word frequency-weighted dictionary
+3. `LetterConstraints` tracks which plaintext letters each cipher letter can still map to, and propagates locks globally when a mapping is confirmed
+4. Candidates and constraints are narrowed iteratively until every cipher word resolves to one plaintext word
+5. When stuck, the solver uses NLTK Brown corpus bigram/trigram frequencies to pick the most contextually likely candidate and continues
 
-## Development
+## Data
 
-Run tests:
+Word frequencies from [wordfreq](https://github.com/rspeer/wordfreq). Bigram and trigram context from the [NLTK](https://www.nltk.org/) Brown corpus, downloaded automatically on first use.
+
+## Web interface
+
+A self-hostable web interface is available in the [repository](https://github.com/not-em/cryptograms). Run it with:
+
 ```bash
-python -m pytest tests/
+pip install cryptograms[web]
+uvicorn cryptograms.api:app
 ```
-
-## TODO
-
-- [ ] Implement dictionary-based word matching
-- [ ] Add bigram/trigram analysis
-- [ ] Implement iterative refinement (hill-climbing)
-- [ ] Add support for pattern-based solving
-- [ ] Create a web interface
-- [ ] Add more comprehensive tests
