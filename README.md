@@ -20,9 +20,9 @@ pip install cryptograms
 from cryptograms import solve_cryptogram, encrypt_cryptogram
 
 # Solve a cipher
-solution = solve_cryptogram("Ebiil tloia")
-print(solution.plaintext)    # Hello world
-print(solution.confidence)   # 0.95
+solution = solve_cryptogram("Ybvo jtweg cl rn nwnvrmhmhz rn xlremvb - ntylvmyln ldlh ytxl nt")
+print(solution.plaintext)    # Myth could be as sustaining as reality - sometimes even more so
+print(solution.confidence)   # 0.70
 
 # Encrypt plaintext (useful for generating puzzles)
 ciphertext = encrypt_cryptogram("Hello world")
