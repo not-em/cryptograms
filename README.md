@@ -1,5 +1,9 @@
 # cryptograms
 
+[![PyPI version](https://img.shields.io/pypi/v/cryptograms)](https://pypi.org/project/cryptograms/)
+[![Python versions](https://img.shields.io/pypi/pyversions/cryptograms)](https://pypi.org/project/cryptograms/)
+[![License](https://img.shields.io/pypi/l/cryptograms)](https://github.com/not-em/cryptograms/blob/main/LICENSE)
+
 A Python package for solving simple substitution ciphers using pattern matching and constraint propagation.
 
 ## Installation
