@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 class Solver:
     """Solves cryptograms using word pattern matching and constraint propagation."""
 
-    def __init__(self):
-        self.word_bank = WordBank(min_length=2)
+    def __init__(self, word_bank: WordBank | None = None):
+        self.word_bank = word_bank if word_bank is not None else WordBank(min_length=2)
         self.constraints = LetterConstraints()
         self.candidates = WordCandidates(self.word_bank)
         self.guesser = Guesser(self.word_bank)
