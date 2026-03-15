@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+import logging
+
 from .models import Puzzle
+
+
+logger = logging.getLogger(__name__)
 
 
 class LetterConstraints:
@@ -25,14 +30,14 @@ class LetterConstraints:
             return  # Already locked
         if not cipher_letter.isalpha():
             return  # Non-letter characters are ignored
-        print(f"Narrowing {cipher_letter} to {candidates}")
+        logger.debug("Narrowing %s to %s", cipher_letter, candidates)
         self.possible[cipher_letter] &= candidates
         if len(self.possible[cipher_letter]) == 1:
             self.lock(cipher_letter, next(iter(self.possible[cipher_letter])))
 
     def lock(self, cipher_letter: str, plaintext_letter: str):
         """Lock in a mapping and propagate constraints globally."""
-        print(f"Locking {cipher_letter} -> {plaintext_letter}")
+        logger.debug("Locking %s -> %s", cipher_letter, plaintext_letter)
         self.locked[cipher_letter] = plaintext_letter
         self.possible[cipher_letter] = {plaintext_letter}
         # Remove this plaintext letter from all other cipher letters

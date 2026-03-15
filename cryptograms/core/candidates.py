@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+import logging
+
 from .constraints import LetterConstraints
 from .guess import Guesser
 from .models import Puzzle
 from .patterns import generate_patterns
 from .words import WordBank
+
+
+logger = logging.getLogger(__name__)
 
 
 class WordCandidates:
@@ -15,7 +20,7 @@ class WordCandidates:
     def __init__(self, word_bank: WordBank):
         self.word_bank = word_bank
         self.guesser = Guesser(word_bank)
-        self.patterns = generate_patterns(self.word_bank.words)
+        self.patterns = generate_patterns(list(self.word_bank.words))
         self.possible_words: dict[str, list[str]] = {}
         self.solved_words: dict[str, str] = {}
         self.solved = False
@@ -35,7 +40,7 @@ class WordCandidates:
                 if self._matches_constraints(word, candidate, constraints)
             ]
             self.possible_words[word] = narrowed
-            print(f"Narrowed candidates for '{word}': {narrowed}")
+            logger.debug("Narrowed candidates for %s: %s", word, narrowed)
 
             if len(narrowed) == 1:
                 # Only one candidate left — lock all its letter mappings
@@ -78,6 +83,6 @@ class WordCandidates:
     def check_solved(self) -> bool:
         """Return True when every cipher word has exactly one remaining candidate."""
         solved = all(len(candidates) == 1 for candidates in self.possible_words.values())
-        print("Check solved:", solved)
+        logger.debug("Check solved: %s", solved)
         return solved
 

@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+import logging
+
 from dataclasses import dataclass, field
 
 from .patterns import find_word_pattern
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -62,7 +67,7 @@ class Puzzle:
 
     def get_preceding_word(self, target_word: str) -> str | None:
         """Get the word that precedes the target word in the ciphertext."""
-        print(f"Finding preceding word for: {target_word}")
+        logger.debug("Finding preceding word for: %s", target_word)
         for i in range(1, len(self.words)):
             if self.words[i] == target_word:
                 return self.words[i - 1]

@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import logging
+
 from wordfreq import word_frequency
 
 from .words import WordBank
+
+
+logger = logging.getLogger(__name__)
 
 
 class Guesser:
@@ -23,10 +28,13 @@ class Guesser:
     ) -> tuple[str, float]:
         """Unified strategy: trigrams if both neighbours known, bigrams if one, frequency otherwise."""
         if preceding and following:
+            logger.debug("best_guess strategy=trigram candidates=%d", len(candidates))
             return self.make_guess_with_trigrams(candidates, preceding=preceding, following=following)
         elif preceding or following:
+            logger.debug("best_guess strategy=bigram candidates=%d", len(candidates))
             return self.make_guess_with_bigrams(candidates, preceding=preceding, following=following)
         else:
+            logger.debug("best_guess strategy=frequency candidates=%d", len(candidates))
             return self.make_frequency_guess(candidates)
 
     def make_frequency_guess(self, candidates: list[str]) -> tuple[str, float]:
