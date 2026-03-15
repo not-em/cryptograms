@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cryptogram Solver</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #e8e4d9;
+      --ink-dim:    #9b9585;
+      --ink-ghost:  #4a4740;
+      --paper:      #0f0e0c;
+      --paper-mid:  #171614;
+      --paper-lift: #1e1c19;
+      --paper-edge: #2a2823;
+      --red:        #c84b3a;
+      --red-dim:    rgba(200,75,58,0.15);
+      --green:      #5a8a5a;
+      --green-dim:  rgba(90,138,90,0.15);
+      --amber:      #b87333;
+      --amber-dim:  rgba(184,115,51,0.15);
+      --mono:       'Share Tech Mono', monospace;
+      --serif:      'Crimson Pro', Georgia, serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--serif);
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* subtle grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.4;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--paper-edge);
+      padding: 2rem 2.5rem 1.5rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      animation: fadeIn 0.6s ease both;
+    }
+
+    .header-left { display: flex; flex-direction: column; gap: 0.2rem; }
+
+    .header-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--amber);
+      text-transform: uppercase;
+    }
+
+    header h1 {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .header-right {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--ink-ghost);
+      text-align: right;
+      line-height: 2;
+      letter-spacing: 0.05em;
+    }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .github-link:hover { color: var(--ink-dim); }
+    .github-link svg { flex-shrink: 0; }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1.25rem 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 0.575rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+    }
+    footer a {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid var(--paper-edge);
+      transition: color 0.15s, border-color 0.15s;
+    }
+    footer a:hover { color: var(--ink-dim); border-color: var(--ink-ghost); }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 4rem;
+      display: grid;
+      gap: 1px;
+    }
+
+    /* ── Sections ── */
+    .section {
+      background: var(--paper-mid);
+      border: 1px solid var(--paper-edge);
+      padding: 1.75rem 2rem;
+      animation: fadeIn 0.5s ease both;
+    }
+
+    .section:first-child { border-radius: 8px 8px 0 0; }
+    .section:last-child  { border-radius: 0 0 8px 8px; }
+    .section + .section  { border-top: none; }
+
+    .section-tag {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-tag::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--paper-edge);
+    }
+
+    /* ── Textarea ── */
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: var(--ink-dim);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--paper);
+      border: 1px solid var(--paper-edge);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--ink);
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      caret-color: var(--amber);
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px var(--amber-dim);
+    }
+    textarea::placeholder {
+      color: var(--ink-ghost);
+      font-style: italic;
+    }
+
+    /* ── Buttons ── */
+    .actions { display: flex; gap: 0.75rem; align-items: center; margin-top: 0.25rem; }
+
+    .btn {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.55rem 1.25rem;
+      border-radius: 3px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+    }
+    .btn:active { transform: translateY(1px); }
+
+    .btn-primary {
+      background: var(--amber);
+      color: var(--paper);
+      border-color: var(--amber);
+      font-weight: 700;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #c97d3a;
+      border-color: #c97d3a;
+    }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--paper-edge);
+      color: var(--ink-dim);
+    }
+    .btn-ghost:hover { border-color: var(--ink-ghost); color: var(--ink); }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 10px; height: 10px;
+      border: 1.5px solid rgba(15,14,12,0.3);
+      border-top-color: var(--paper);
+      border-radius: 50%;
+      animation: spin 0.5s linear infinite;
+    }
+    .btn-ghost .spinner {
+      border-color: rgba(232,228,217,0.15);
+      border-top-color: var(--ink-dim);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result ── */
+    .result {
+      display: none;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--paper-edge);
+      animation: fadeIn 0.3s ease both;
+    }
+    .result.visible { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+      margin-bottom: 0.5rem;
+    }
+
+    .output-text {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      line-height: 1.8;
+      background: var(--paper);
+      border: 1px solid var(--paper-edge);
+      border-radius: 4px;
+      padding: 0.85rem 1rem;
+      color: var(--ink);
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    /* ── Confidence ── */
+    .confidence-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.6rem;
+      margin-top: 0.65rem;
+    }
+
+    .badge {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2px;
+    }
+    .badge-green  { background: var(--green-dim);  color: #7ab87a; border: 1px solid var(--green); }
+    .badge-yellow { background: var(--amber-dim);  color: #c8943a; border: 1px solid var(--amber); }
+    .badge-red    { background: var(--red-dim);    color: #d46a5a; border: 1px solid var(--red);   }
+
+    .confidence-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--ink-ghost);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Mapping ── */
+    .mapping-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+      margin: 1.25rem 0 0.65rem;
+    }
+
+    .mapping-toggle {
+      margin-top: 1.25rem;
+    }
+    .mapping-toggle > summary {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: color 0.15s;
+    }
+    .mapping-toggle > summary::-webkit-details-marker { display: none; }
+    .mapping-toggle > summary::after {
+      content: '▶';
+      font-size: 0.4rem;
+      transition: transform 0.2s;
+    }
+    .mapping-toggle[open] > summary::after { transform: rotate(90deg); }
+    .mapping-toggle > summary:hover { color: var(--ink-dim); }
+    .mapping-toggle > .mapping-grid { margin-top: 0.65rem; }
+
+    .mapping-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+      gap: 3px;
+    }
+
+    .map-cell {
+      background: var(--paper);
+      border: 1px solid var(--paper-edge);
+      border-radius: 3px;
+      padding: 0.4rem 0.2rem 0.35rem;
+      text-align: center;
+      font-family: var(--mono);
+      transition: border-color 0.15s, background 0.15s;
+      cursor: default;
+    }
+    .map-cell:hover {
+      border-color: var(--amber);
+      background: var(--amber-dim);
+    }
+    .map-cell .cipher-letter {
+      font-size: 0.6rem;
+      color: var(--ink-ghost);
+      display: block;
+      letter-spacing: 0.05em;
+    }
+    .map-cell .arrow {
+      font-size: 0.45rem;
+      color: var(--ink-ghost);
+      display: block;
+      margin: 1px 0;
+    }
+    .map-cell .plain-letter {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--amber);
+      display: block;
+    }
+
+    /* ── Error ── */
+    .error {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      color: #d46a5a;
+      background: var(--red-dim);
+      border: 1px solid var(--red);
+      border-radius: 3px;
+      padding: 0.6rem 0.85rem;
+      margin-top: 0.75rem;
+    }
+    .error.visible { display: flex; }
+
+    /* ── Encrypt collapsible ── */
+    details > summary {
+      cursor: pointer;
+      list-style: none;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary::before {
+      content: '▶';
+      font-size: 0.45rem;
+      color: var(--ink-ghost);
+      transition: transform 0.2s;
+    }
+    details[open] > summary::before { transform: rotate(90deg); }
+    details[open] > summary {
+      color: var(--ink-dim);
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── Field header (label + copy button row) ── */
+    .field-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .field-header label,
+    .field-header .result-label,
+    .field-header .mapping-label { margin-bottom: 0; }
+
+    .btn-copy {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.55rem;
+      border-radius: 2px;
+      border: 1px solid var(--paper-edge);
+      background: transparent;
+      color: var(--ink-ghost);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .btn-copy:hover { border-color: var(--ink-ghost); color: var(--ink-dim); }
+    .btn-copy.copied {
+      border-color: var(--green);
+      color: #7ab87a;
+      background: var(--green-dim);
+    }
+
+    /* ── Hint text ── */
+    .hint {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.05em;
+      color: var(--ink-ghost);
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 520px) {
+      header { padding: 1.5rem 1.25rem 1.25rem; flex-direction: column; align-items: flex-start; }
+      main   { padding: 1.5rem 1rem 3rem; }
+      .section { padding: 1.25rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Cryptogram Solver</h1>
+  </div>
+  <div class="header-right">
+    <a href="https://github.com/not-em/cryptograms" target="_blank" rel="noopener" class="github-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+      </svg>
+      not-em/cryptograms
+    </a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Solve ── -->
+  <div class="section" style="animation-delay:0.05s">
+    <p class="section-tag">Decode</p>
+
+    <div class="field">
+      <div class="field-header">
+        <label for="ciphertext">Ciphertext</label>
+        <button class="btn-copy" onclick="copyText(this, 'ciphertext')">Copy</button>
+      </div>
+      <textarea id="ciphertext" rows="3"
+        placeholder="Paste your encoded message here…"></textarea>
+      <p class="hint">Ctrl+Enter to decode</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="solveBtn" onclick="solve()">
+        Decode
+      </button>
+    </div>
+
+    <div class="error" id="solveError">
+      <span>⚠</span>
+      <span id="solveErrorText"></span>
+    </div>
+
+    <div class="result" id="solveResult">
+      <div class="field-header">
+        <p class="result-label">Plaintext</p>
+        <button class="btn-copy" onclick="copyText(this, 'plaintextOut')">Copy</button>
+      </div>
+      <div class="output-text" id="plaintextOut"></div>
+
+      <div class="confidence-row">
+        <span class="badge" id="confidenceBadge"></span>
+        <span class="confidence-label" id="confidenceLabel"></span>
+      </div>
+
+      <details class="mapping-toggle">
+        <summary>Letter mapping</summary>
+        <div class="mapping-grid" id="mappingOut"></div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ── Encrypt ── -->
+  <div class="section" style="animation-delay:0.1s">
+    <details id="encryptDetails">
+      <summary>Encode</summary>
+
+      <div class="field">
+        <div class="field-header">
+          <label for="plaintext">Plaintext</label>
+          <button class="btn-copy" onclick="copyText(this, 'plaintext')">Copy</button>
+        </div>
+        <textarea id="plaintext" rows="2"
+          placeholder="Enter a sentence to encode…"></textarea>
+        <p class="hint">Ctrl+Enter to encode</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="encryptBtn" onclick="encryptText()">Encode</button>
+        <button class="btn btn-ghost" id="copyBtn"
+          style="display:none" onclick="copyToSolver()">↑ Send to decoder</button>
+      </div>
+
+      <div class="result" id="encryptResult">
+        <div class="field-header">
+          <p class="result-label">Ciphertext</p>
+          <button class="btn-copy" onclick="copyText(this, 'ciphertextOut')">Copy</button>
+        </div>
+        <div class="output-text" id="ciphertextOut"></div>
+      </div>
+    </details>
+  </div>
+
+</main>
+
+<footer>
+  <span>Corpus data from the <a href="https://www.nltk.org/" target="_blank" rel="noopener">NLTK</a> Brown corpus &amp; <a href="https://github.com/rspeer/wordfreq" target="_blank" rel="noopener">wordfreq</a></span>
+</footer>
+
+<script>
+  async function solve() {
+    const ciphertext = document.getElementById('ciphertext').value.trim();
+    if (!ciphertext) return;
+
+    const btn      = document.getElementById('solveBtn');
+    const errorEl  = document.getElementById('solveError');
+    const resultEl = document.getElementById('solveResult');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Decoding…';
+    errorEl.className = 'error';
+    resultEl.className = 'result';
+
+    try {
+      const res  = await fetch('/solve', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ ciphertext }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Solver failed');
+
+      document.getElementById('plaintextOut').textContent = data.plaintext;
+
+      const pct   = data.confidence * 100;
+      const badge = document.getElementById('confidenceBadge');
+      badge.textContent = `${pct.toFixed(1)}%`;
+      badge.className   = 'badge ' + (pct >= 70 ? 'badge-green' : pct >= 40 ? 'badge-yellow' : 'badge-red');
+      document.getElementById('confidenceLabel').textContent = 'confidence';
+
+      const grid = document.getElementById('mappingOut');
+      grid.innerHTML = Object.entries(data.mapping)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([c, p]) => `
+          <div class="map-cell">
+            <span class="cipher-letter">${c}</span>
+            <span class="arrow">↓</span>
+            <span class="plain-letter">${p}</span>
+          </div>`)
+        .join('');
+
+      resultEl.className = 'result visible';
+
+    } catch (err) {
+      document.getElementById('solveErrorText').textContent = err.message;
+      errorEl.className = 'error visible';
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Decode';
+    }
+  }
+
+  async function encryptText() {
+    const plaintext = document.getElementById('plaintext').value.trim();
+    if (!plaintext) return;
+
+    const btn = document.getElementById('encryptBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Encoding…';
+
+    try {
+      const res  = await fetch('/encrypt', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ plaintext }),
+      });
+      const data = await res.json();
+
+      document.getElementById('ciphertextOut').textContent = data.ciphertext;
+      document.getElementById('encryptResult').className  = 'result visible';
+      document.getElementById('copyBtn').style.display    = '';
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Encode';
+    }
+  }
+
+  function copyToSolver() {
+    document.getElementById('ciphertext').value =
+      document.getElementById('ciphertextOut').textContent;
+    document.getElementById('ciphertext').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function copyText(btn, id) {
+    const el   = document.getElementById(id);
+    const text = (el.value !== undefined ? el.value : el.textContent).trim();
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+  }
+
+  document.getElementById('ciphertext').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) solve();
+  });
+
+  document.getElementById('plaintext').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) encryptText();
+  });
+</script>
+
+</body>
+</html>
