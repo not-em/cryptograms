@@ -1,17 +1,4 @@
-# Core dependencies (none required for basic functionality)
-
-# Web API
-fastapi>=0.110.0
-uvicorn[standard]>=0.29.0
-
-# Development dependencies
-pytest>=7.0.0
-pytest-cov>=4.0.0
-
-# Code formatting and linting
-ruff>=0.1.0
-black>=23.0.0
-
-# Word lists and frequency data
-nltk>=3.8          # Natural language processing and word corpus
-wordfreq>=3.0      # Word frequency data from multiple sources
+# Install the package with all local extras for development.
+# Runtime dependencies are declared in pyproject.toml [project.dependencies].
+# Web server dependencies are in [project.optional-dependencies.web].
+-e .[dev,web]

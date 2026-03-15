@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from .service import solve_cryptogram, solve_file
+from .service import encrypt_cryptogram, solve_cryptogram, solve_file
 
 __all__ = [
+    "encrypt_cryptogram",
     "solve_cryptogram",
     "solve_file",
 ]
-

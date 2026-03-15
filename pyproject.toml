@@ -1,3 +1,55 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cryptograms"
+version = "0.1.0"
+requires-python = ">=3.12"
+description = "Substitution cipher solver using pattern matching and constraint propagation"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+  { name = "not-em", email = "not-em@users.noreply.github.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Games/Entertainment :: Puzzle Games",
+]
+dependencies = [
+    "nltk>=3.8",
+    "wordfreq>=3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/not-em/cryptograms"
+Repository = "https://github.com/not-em/cryptograms"
+"Bug Tracker" = "https://github.com/not-em/cryptograms/issues"
+
+[project.scripts]
+cryptograms = "cryptograms.cli.main:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "black>=23.0.0",
+]
+web = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+]
+
+[tool.setuptools.packages.find]
+exclude = ["tests*"]
+
+
 [tool.black]
 line-length = 88
 target-version = ['py314']
